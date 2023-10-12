@@ -1,0 +1,21 @@
+{
+    "trailingSlash": false,
+    "redirects": [
+        {
+            "source": "/",
+            "destination": "/api",
+            "permanent": false
+        },
+        {
+            "source": "/api",
+            "destination": "/api/ping",
+            "permanent": false
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "/api/index.go"
+        }
+    ]
+}
