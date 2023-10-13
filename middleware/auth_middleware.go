@@ -9,6 +9,15 @@ import (
 )
 
 func Validate(c *gin.Context) {
+	// reqHeader, err := c.Cookie("Authorization")
+	// if err != nil {
+	// 	c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+	// 		"error":   true,
+	// 		"message": "Tidak ada token",
+	// 	})
+	// 	return
+	// }
+
 	reqHeader := c.GetHeader("Authorization")
 
 	if reqHeader == "" {
@@ -24,6 +33,7 @@ func Validate(c *gin.Context) {
 	if len(tokSlice) < 2 {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
+			"token":   reqHeader,
 			"message": "Invalid token",
 		})
 		return

@@ -28,6 +28,12 @@ func registerRouter(r *gin.RouterGroup) {
 	r.GET("/api/user/:username", controllers.ShowUserDetailByIdParam)
 	r.PUT("/api/user/update", middleware.Validate, controllers.UpdateProfile)
 
+	r.GET("/api/tipekamar", middleware.Validate, controllers.GetTipeKamar)
+	r.GET("/api/tipekamar/:id", middleware.Validate, controllers.GetTipeKamarById)
+	r.POST("/api/tipekamar", middleware.Validate, controllers.CreateTipeKamar)
+	r.PUT("/api/tipekamar/:id", middleware.Validate, controllers.UpdateTipeKamar)
+	r.DELETE("/api/tipekamar/:id", middleware.Validate, controllers.DeleteTipeKamar)
+
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
 
