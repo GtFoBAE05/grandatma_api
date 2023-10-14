@@ -34,6 +34,12 @@ func registerRouter(r *gin.RouterGroup) {
 	r.PUT("/api/tipekamar/:id", middleware.Validate, controllers.UpdateTipeKamar)
 	r.DELETE("/api/tipekamar/:id", middleware.Validate, controllers.DeleteTipeKamar)
 
+	r.GET("/api/kamar", middleware.Validate, controllers.GetKamar)
+	r.GET("/api/kamar/:id", middleware.Validate, controllers.GetKamarById)
+	r.POST("/api/kamar", middleware.Validate, controllers.CreateKamar)
+	r.PUT("/api/kamar/:id", middleware.Validate, controllers.UpdateKamar)
+	r.DELETE("/api/kamar/:id", middleware.Validate, controllers.DeleteKamar)
+
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
 

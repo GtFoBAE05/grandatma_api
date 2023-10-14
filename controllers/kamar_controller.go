@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateTipeKamar(c *gin.Context) {
-	var reqBody models.TipeKamar
+func CreateKamar(c *gin.Context) {
+	var reqBody models.Kamar
 
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -21,11 +21,11 @@ func CreateTipeKamar(c *gin.Context) {
 		return
 	}
 
-	tipeKamar := models.NewTipeKamar(reqBody.NamaTipe, reqBody.PilihanTempatTidur, reqBody.Fasilitas, reqBody.Deskripsi, reqBody.RincianKamar)
+	kamar := models.NewKamar(reqBody.NomorKamar, reqBody.IdTipeKamar, reqBody.Status)
 
 	query := `
-	INSERT INTO tipe_kamar (nama_tipe, pilihan_tempat_tidur, fasilitas, deskripsi, rincian_kamar, created_at, updated_at)
-	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	INSERT INTO kamar (nomor_kamar, id_tipe_kamar, status, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5)
 	`
 
 	stmt, err := database.DBClient.Prepare(query)
@@ -39,7 +39,7 @@ func CreateTipeKamar(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tipeKamar.NamaTipe, tipeKamar.PilihanTempatTidur, tipeKamar.Fasilitas, tipeKamar.Deskripsi, tipeKamar.RincianKamar, tipeKamar.CreatedAt, tipeKamar.UpdatedAt)
+	_, err = stmt.Exec(kamar.NomorKamar, kamar.IdTipeKamar, kamar.Status, kamar.CreatedAt, kamar.UpdatedAt)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -51,23 +51,25 @@ func CreateTipeKamar(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"error":   false,
-		"message": "SUccess create tipe kamar",
+		"message": "SUccess create kamar",
 	})
 }
 
-func GetTipeKamar(c *gin.Context) {
-	var tipeKamars []models.TipeKamar
+func GetKamar(c *gin.Context) {
+	var kamars []models.KamarXTipeKamar
 
 	query := `
 		SELECT 
-			id, nama_tipe, pilihan_tempat_tidur
-			, fasilitas, deskripsi, rincian_kamar
-			, created_at, updated_at
+			k.id as id_kamar, k.nomor_kamar, tk.nama_tipe, k.status
+			, k.created_at, k.updated_at
 		FROM
-			tipe_kamar
+			kamar k
+		JOIN 
+			tipe_kamar tk
+		on k.id_tipe_kamar = tk.id
 	`
 
-	err := database.DBClient.Select(&tipeKamars, query)
+	err := database.DBClient.Select(&kamars, query)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
@@ -78,14 +80,14 @@ func GetTipeKamar(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"error": false,
-		"data":  tipeKamars,
+		"data":  kamars,
 	})
 }
 
-func GetTipeKamarById(c *gin.Context) {
+func GetKamarById(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
-	var tipeKamar models.TipeKamar
+	var kamar models.Kamar
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
@@ -96,15 +98,14 @@ func GetTipeKamarById(c *gin.Context) {
 
 	query := `
 		SELECT 
-			id, nama_tipe, pilihan_tempat_tidur
-			, fasilitas, deskripsi, rincian_kamar
+			id, nomor_kamar,id_tipe_kamar, status
 			, created_at, updated_at
 		FROM
-			tipe_kamar
+			kamar
 		WHERE id = $1
 	`
 
-	err = database.DBClient.Get(&tipeKamar, query, id)
+	err = database.DBClient.Get(&kamar, query, id)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -116,12 +117,12 @@ func GetTipeKamarById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"error": false,
-		"data":  tipeKamar,
+		"data":  kamar,
 	})
 
 }
 
-func UpdateTipeKamar(c *gin.Context) {
+func UpdateKamar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -132,7 +133,7 @@ func UpdateTipeKamar(c *gin.Context) {
 		return
 	}
 
-	var reqBody models.TipeKamar
+	var reqBody models.Kamar
 
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -143,14 +144,12 @@ func UpdateTipeKamar(c *gin.Context) {
 	}
 
 	query := `
-		UPDATE tipe_kamar
-		set  nama_tipe = $1, 
-			pilihan_tempat_tidur = $2, 
-			fasilitas = $3, 
-			deskripsi = $4, 
-			rincian_kamar = $5,
-			 updated_at = $6
-		WHERE id = $7
+		UPDATE kamar
+		SET  nomor_kamar = $1, 
+			id_tipe_kamar = $2, 
+			status = $3, 
+			 updated_at = $4
+		WHERE id = $5
 	`
 
 	stmt, err := database.DBClient.Prepare(query)
@@ -164,8 +163,7 @@ func UpdateTipeKamar(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(reqBody.NamaTipe, reqBody.PilihanTempatTidur, reqBody.Fasilitas,
-		reqBody.Deskripsi, reqBody.RincianKamar, time.Now(), id)
+	_, err = stmt.Exec(reqBody.NomorKamar, reqBody.IdTipeKamar, reqBody.Status, time.Now(), id)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -177,12 +175,12 @@ func UpdateTipeKamar(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"error":   false,
-		"message": "Success updated tipe kamar",
+		"message": "Success updated kamar",
 	})
 
 }
 
-func DeleteTipeKamar(c *gin.Context) {
+func DeleteKamar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 
@@ -194,7 +192,7 @@ func DeleteTipeKamar(c *gin.Context) {
 		return
 	}
 
-	res, err := database.DBClient.Exec("DELETE FROM tipe_kamar WHERE id = $1", id)
+	res, err := database.DBClient.Exec("DELETE FROM kamar WHERE id = $1", id)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -216,13 +214,13 @@ func DeleteTipeKamar(c *gin.Context) {
 	if rowsAffected == 0 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
-			"message": "Gagal Menghapus, id tipe kamar tidak ditemukan",
+			"message": "Gagal Menghapus, id kamar tidak ditemukan",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"error":   true,
-		"message": "Berhasil hapus tipe kamar",
+		"message": "Berhasil hapus kamar",
 	})
 }
