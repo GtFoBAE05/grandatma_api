@@ -11,6 +11,15 @@ type Tarif struct {
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
 }
 
+type TarifXTipeKamarXSeason struct {
+	Id         int       `db:"id"`
+	TipeKamar  string    `db:"nama_tipe_kamar"`
+	NamaSeason string    `db:"nama_season"`
+	Tarif      float64   `db:"tarif"`
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
+}
+
 func NewTarif(idTipeKamar int, seasonId int, tarif float64) Tarif {
 	return Tarif{
 		IdTipeKamar: idTipeKamar,

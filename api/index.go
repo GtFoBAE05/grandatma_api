@@ -52,6 +52,12 @@ func registerRouter(r *gin.RouterGroup) {
 	r.PUT("/api/fasilitasberbayar/:id", middleware.Validate, controllers.UpdateFasilitasBerbayar)
 	r.DELETE("/api/fasilitasberbayar/:id", middleware.Validate, controllers.DeleteFasilitasBerbayar)
 
+	r.GET("/api/tarif", middleware.Validate, controllers.GetTarifs)
+	r.GET("/api/tarif/:id", middleware.Validate, controllers.GetTarifById)
+	r.POST("/api/tarif", middleware.Validate, controllers.CreateTarif)
+	r.PUT("/api/tarif/:id", middleware.Validate, controllers.UpdateTarif)
+	r.DELETE("/api/tarif/:id", middleware.Validate, controllers.DeleteTarif)
+
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
 
