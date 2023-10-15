@@ -46,6 +46,12 @@ func registerRouter(r *gin.RouterGroup) {
 	r.PUT("/api/season/:id", middleware.Validate, controllers.UpdateSeason)
 	r.DELETE("/api/season/:id", middleware.Validate, controllers.DeleteSeason)
 
+	r.GET("/api/fasilitasberbayar", middleware.Validate, controllers.GetFasilitasBerbayars)
+	r.GET("/api/fasilitasberbayar/:id", middleware.Validate, controllers.GetFasilitasBerbayarById)
+	r.POST("/api/fasilitasberbayar", middleware.Validate, controllers.CreateFasilitasBerbayar)
+	r.PUT("/api/fasilitasberbayar/:id", middleware.Validate, controllers.UpdateFasilitasBerbayar)
+	r.DELETE("/api/fasilitasberbayar/:id", middleware.Validate, controllers.DeleteFasilitasBerbayar)
+
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
 
