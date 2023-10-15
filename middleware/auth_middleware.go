@@ -21,7 +21,7 @@ func Validate(c *gin.Context) {
 	reqHeader := c.GetHeader("Authorization")
 
 	if reqHeader == "" {
-		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error":   true,
 			"message": "Tidak ada token",
 		})
@@ -31,7 +31,7 @@ func Validate(c *gin.Context) {
 	tokSlice := strings.Split(reqHeader, "Bearer ")
 
 	if len(tokSlice) < 2 {
-		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error":   true,
 			"token":   reqHeader,
 			"message": "Invalid token",
@@ -44,7 +44,7 @@ func Validate(c *gin.Context) {
 	token, err := utility.VerifyToken(tokString)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"error":   true,
 			"message": err.Error(),
 		})
