@@ -77,7 +77,7 @@ func GetFasilitasReservasiByIdReservasi(c *gin.Context) {
 		ON 
 			fr.id_fasilitas_berbayar = fb.id
 		WHERE
-			fr.id = $1
+			fr.id_reservasi = $1
 	`
 
 	err = database.DBClient.Select(&fasilitasReservasis, query, id)

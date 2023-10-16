@@ -141,6 +141,7 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"error": false,
 		"token": tokString,
+		"role":  users.Role,
 	})
 
 }
@@ -222,6 +223,35 @@ func ShowUserDetailByIdParam(c *gin.Context) {
 		WHERE username = $1
 	`
 	err := database.DBClient.Get(&user, query, username)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  user,
+	})
+}
+
+func SearchUserByUsername(c *gin.Context) {
+	username := c.Query("username")
+
+	var user []models.Pengguna
+
+	query := `
+		SELECT 
+			id, nama, email
+			, username, notelp
+		FROM
+			pengguna
+		WHERE username like '%' || $1 || '%'
+	`
+	err := database.DBClient.Select(&user, query, username)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

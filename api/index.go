@@ -26,6 +26,7 @@ func registerRouter(r *gin.RouterGroup) {
 	r.POST("/api/auth/changepass", middleware.Validate, controllers.ChangePassword)
 
 	r.GET("/api/user/:username", controllers.ShowUserDetailByIdParam)
+	r.GET("/api/user/search", controllers.SearchUserByUsername)
 	r.PUT("/api/user/update", middleware.Validate, controllers.UpdateProfile)
 
 	r.GET("/api/tipekamar", middleware.Validate, controllers.GetTipeKamar)
@@ -57,6 +58,8 @@ func registerRouter(r *gin.RouterGroup) {
 	r.POST("/api/tarif", middleware.Validate, controllers.CreateTarif)
 	r.PUT("/api/tarif/:id", middleware.Validate, controllers.UpdateTarif)
 	r.DELETE("/api/tarif/:id", middleware.Validate, controllers.DeleteTarif)
+
+	r.POST("/api/reservasi", middleware.Validate, controllers.CreateReservasi)
 
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }

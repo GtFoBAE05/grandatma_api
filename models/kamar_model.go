@@ -20,6 +20,10 @@ type KamarXTipeKamar struct {
 	UpdatedAt  time.Time `db:"updated_at"`
 }
 
+type TarifKamar struct {
+	Tarif float64 `db:"tarif"`
+}
+
 func NewKamar(nomorKamar string, idTipeKamar int, status bool) Kamar {
 	return Kamar{
 		NomorKamar:  nomorKamar,
