@@ -40,6 +40,7 @@ func registerRouter(r *gin.RouterGroup) {
 	r.POST("/api/kamar", middleware.Validate, controllers.CreateKamar)
 	r.PUT("/api/kamar/:id", middleware.Validate, controllers.UpdateKamar)
 	r.DELETE("/api/kamar/:id", middleware.Validate, controllers.DeleteKamar)
+	r.GET("/api/kamar/avail", middleware.Validate, controllers.GetKetersediaanKamarByDate)
 
 	r.GET("/api/season", middleware.Validate, controllers.GetSeasons)
 	r.GET("/api/season/:id", middleware.Validate, controllers.GetSeasonById)
@@ -53,6 +54,9 @@ func registerRouter(r *gin.RouterGroup) {
 	r.PUT("/api/fasilitasberbayar/:id", middleware.Validate, controllers.UpdateFasilitasBerbayar)
 	r.DELETE("/api/fasilitasberbayar/:id", middleware.Validate, controllers.DeleteFasilitasBerbayar)
 
+	r.POST("/api/fasilitasreservasi", middleware.Validate, controllers.CreateFasilitasReservasi)
+	r.GET("/api/fasilitasreservasi/:id", middleware.Validate, controllers.GetFasilitasReservasiByIdReservasi)
+
 	r.GET("/api/tarif", middleware.Validate, controllers.GetTarifs)
 	r.GET("/api/tarif/:id", middleware.Validate, controllers.GetTarifById)
 	r.POST("/api/tarif", middleware.Validate, controllers.CreateTarif)
@@ -60,6 +64,10 @@ func registerRouter(r *gin.RouterGroup) {
 	r.DELETE("/api/tarif/:id", middleware.Validate, controllers.DeleteTarif)
 
 	r.POST("/api/reservasi", middleware.Validate, controllers.CreateReservasi)
+
+	r.GET("/api/transaksihistory", middleware.Validate, controllers.GetTransaksiHistory)
+	r.GET("/api/transaksihistory/:userId", middleware.Validate, controllers.GetTransaksiHistoryByUserId)
+	r.GET("/api/transaksidetail/:id", middleware.Validate, controllers.GetTransaksiDetail)
 
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }

@@ -20,6 +20,12 @@ type KamarXTipeKamar struct {
 	UpdatedAt  time.Time `db:"updated_at"`
 }
 
+type KamarAvail struct {
+	NomorKamar string  `db:"nomor_kamar"`
+	NamaTipe   string  `db:"nama_tipe"`
+	Tarif      float64 `db:"tarif"`
+}
+
 type TarifKamar struct {
 	Tarif float64 `db:"tarif"`
 }

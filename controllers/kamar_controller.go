@@ -122,6 +122,49 @@ func GetKamarById(c *gin.Context) {
 
 }
 
+func GetKetersediaanKamarByDate(c *gin.Context) {
+	tanggalMulai := c.Query("tanggal_mulai")
+	tanggalSelesai := c.Query("tanggal_selesai")
+
+	var kamar []models.KamarAvail
+
+	query := `
+    SELECT 
+		k.nomor_kamar, tk.nama_tipe, t.tarif
+    FROM 
+		kamar k
+    INNER JOIN 
+		tipe_kamar tk ON k.id_tipe_kamar = tk.id
+    LEFT JOIN 
+		tarif t ON tk.id = t.id_tipe_kamar
+	LEFT JOIN 
+		reservasi r ON k.nomor_kamar = r.nomor_kamar
+    WHERE 
+		k.status = true
+    AND (
+        (r.tanggal_checkin > $1 AND r.tanggal_checkin > $2)
+        OR (r.tanggal_checkout < $1 AND r.tanggal_checkout < $2)
+        OR (r.tanggal_checkin IS NULL AND r.tanggal_checkout IS NULL)
+    );
+`
+
+	err := database.DBClient.Select(&kamar, query, tanggalMulai, tanggalSelesai)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  kamar,
+	})
+
+}
+
 func UpdateKamar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

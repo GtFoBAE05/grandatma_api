@@ -48,6 +48,77 @@ func CreateFasilitasReservasi(c *gin.Context) {
 		return
 	}
 
+	//get total pembayaran sebelumnya
+	var tarifSebelum float64
+	query = `
+		SELECT 
+			total_pembayaran
+		FROM 
+			transaksi 
+		WHERE 
+			id_reservasi = $1
+	`
+	err = database.DBClient.Get(&tarifSebelum, query, reqBody.IdReservasi)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	//get tarif
+	var harga float64
+	query = `
+		SELECT 
+			harga
+		FROM 
+			fasilitas_berbayar 
+		WHERE 
+			id = $1
+	`
+
+	err = database.DBClient.Get(&harga, query, reqBody.IdFasilitasBerbayar)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+			"a":       "a",
+		})
+		return
+	}
+
+	harga = harga * float64(reqBody.JumlahUnit)
+	totalPembaranBaru := harga + tarifSebelum
+
+	//update transaksi price
+	query = `
+		UPDATE transaksi
+		SET  total_pembayaran = $1 
+		WHERE id_reservasi = $2
+	`
+
+	stmt, err = database.DBClient.Prepare(query)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(totalPembaranBaru, reqBody.IdReservasi)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"error":   false,
 		"message": "SUccess create fasilitas reservasi",
