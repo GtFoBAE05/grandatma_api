@@ -19,6 +19,13 @@ type TransaksiHistory struct {
 	TotalPembayaran  float64 `json:"total_pembayaran" db:"total_pembayaran"`
 }
 
+type SearchTransaksi struct {
+	Nama             string  `db:"nama"`
+	IdReservasi      string  `json:"id_reservasi" db:"id_reservasi"`
+	TanggalTransaksi string  `json:"tanggal_transaksi" db:"tanggal_transaksi"`
+	TotalPembayaran  float64 `json:"total_pembayaran" db:"total_pembayaran"`
+}
+
 type TransaksiDetail struct {
 	IdReservasi      string  `db:"id_reservasi"`
 	TanggalTransaksi string  `db:"tanggal_transaksi"`
@@ -30,6 +37,7 @@ type TransaksiDetail struct {
 	JumlahAnak       int     `db:"jumlah_anak"`
 	NomorRekening    string  `db:"nomor_rekening"`
 	PilihanKasur     string  `db:"pilihan_kasur"`
+	StatusBatal      bool    `db:"status_batal"`
 }
 
 func NewTransaksi(idReservasi string, tanggalTransaksi string, totalPembayaran float64, statusDeposit, statusBayar bool) Transaksi {

@@ -17,6 +17,10 @@ type Reservasi struct {
 	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
 }
 
+type TotalReservasi struct {
+	TotalReservasi int `db:"total_reservasi"`
+}
+
 func NewReservasi(idReservasi string, idPengguna int, nomorKamar int, tanggalCheckin string, tanggalCheckout string, jumlahDewasa int, jumlahAnak int, nomorRekening string, pilihanKasur string) Reservasi {
 	return Reservasi{
 		IdReservasi:     idReservasi,

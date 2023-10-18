@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"grandatma_api/database"
 	"grandatma_api/models"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 func CreateReservasi(c *gin.Context) {
 	var reqBody models.Reservasi
+	var totalReservasi models.TotalReservasi
 
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -22,8 +24,39 @@ func CreateReservasi(c *gin.Context) {
 
 	reservasi := models.NewReservasi(reqBody.IdReservasi, reqBody.IdPengguna, reqBody.NomorKamar, reqBody.TanggalCheckin, reqBody.TanggalCheckout, reqBody.JumlahDewasa, reqBody.JumlahAnak, reqBody.NomorRekening, reqBody.PilihanKasur)
 
-	//add reservasi
+	//get total reservasi
 	query := `
+	SELECT 
+		MAX(id) as total_reservasi
+	FROM
+		reservasi
+	`
+
+	err := database.DBClient.Get(&totalReservasi, query)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":      true,
+			"err disini": "select total reservasi",
+			"message":    err.Error(),
+		})
+		return
+	}
+
+	jenisPelanggan := "P"
+	if reqBody.IdReservasi == "grup" {
+		jenisPelanggan = "G"
+	}
+
+	t := time.Now()
+	tanggal := fmt.Sprintf("%d%02d%02d", t.Day(), t.Month(), t.Year()%100)
+
+	totalReservasiStr := fmt.Sprintf("%d", totalReservasi.TotalReservasi+1)
+
+	//gabungan id reservasi
+	idReservasi := fmt.Sprintf("%s%s-%s", jenisPelanggan, tanggal, totalReservasiStr)
+
+	//add reservasi
+	query = `
 	INSERT INTO reservasi (id_reservasi, id_pengguna, nomor_kamar, tanggal_checkin, tanggal_checkout, 
 		jumlah_dewasa, jumlah_anak, nomor_rekening, pilihan_kasur, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -40,7 +73,7 @@ func CreateReservasi(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(reservasi.IdReservasi, reservasi.IdPengguna, reservasi.NomorKamar, reservasi.TanggalCheckin, reservasi.TanggalCheckout,
+	_, err = stmt.Exec(idReservasi, reservasi.IdPengguna, reservasi.NomorKamar, reservasi.TanggalCheckin, reservasi.TanggalCheckout,
 		reservasi.JumlahDewasa, reservasi.JumlahAnak, reservasi.NomorRekening, reservasi.PilihanKasur, reservasi.CreatedAt, reservasi.UpdatedAt)
 
 	if err != nil {
@@ -120,7 +153,7 @@ func CreateReservasi(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(reservasi.IdReservasi, time.Now(), totalPembayaran, false, false, reservasi.CreatedAt, reservasi.UpdatedAt)
+	_, err = stmt.Exec(idReservasi, time.Now(), totalPembayaran, false, false, reservasi.CreatedAt, reservasi.UpdatedAt)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

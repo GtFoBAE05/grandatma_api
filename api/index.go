@@ -69,6 +69,14 @@ func registerRouter(r *gin.RouterGroup) {
 	r.GET("/api/transaksihistory/:userId", middleware.Validate, controllers.GetTransaksiHistoryByUserId)
 	r.GET("/api/transaksidetail/:id", middleware.Validate, controllers.GetTransaksiDetail)
 
+	r.PUT("/api/transaksi/updatedeposit/:id", middleware.Validate, controllers.UpdateStatusDeposit)
+
+	r.GET("/api/transaksi/search/batal", middleware.Validate, controllers.GetTransaksiByUsernameOrTransactionIdCanCancel)
+	r.PUT("/api/transaksi/batal/:id", middleware.Validate, controllers.UpdateStatusBatal)
+
+	r.GET("/api/transaksi/search/uncompletepayment", middleware.Validate, controllers.GetTransaksiByUsernameOrTransactionIdNotCompletedPayment)
+	r.PUT("/api/transaksi/updatepayment/:id", middleware.Validate, controllers.UpdateStatusBayar)
+
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
 
