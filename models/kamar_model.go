@@ -21,9 +21,12 @@ type KamarXTipeKamar struct {
 }
 
 type KamarAvail struct {
-	NomorKamar string  `db:"nomor_kamar"`
-	NamaTipe   string  `db:"nama_tipe"`
-	Tarif      float64 `db:"tarif"`
+	Id          int     `db:"id_kamar"`
+	NomorKamar  string  `db:"nomor_kamar"`
+	IdTipeKamar int     `db:"id_tipe_kamar"`
+	NamaTipe    string  `db:"nama_tipe"`
+	IdSeason    int     `db:"id_season"`
+	Tarif       float64 `db:"tarif"`
 }
 
 type TarifKamar struct {

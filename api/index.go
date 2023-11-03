@@ -1,4 +1,4 @@
-package api
+package main
 
 import (
 	"fmt"
@@ -25,8 +25,9 @@ func registerRouter(r *gin.RouterGroup) {
 	r.POST("/api/auth/login", controllers.Login)
 	r.POST("/api/auth/changepass", middleware.Validate, controllers.ChangePassword)
 
-	r.GET("/api/user/:username", controllers.ShowUserDetailByIdParam)
-	r.GET("/api/user/search", controllers.SearchUserByUsername)
+	r.GET("/api/user/:id", controllers.ShowUserDetailByIdParam)
+	r.GET("/api/user/bytoken", middleware.Validate, controllers.ShowUserDetailByToken)
+	r.GET("/api/user/customer/search", controllers.SearchCustomerByUsername)
 	r.PUT("/api/user/update", middleware.Validate, controllers.UpdateProfile)
 
 	r.GET("/api/tipekamar", middleware.Validate, controllers.GetTipeKamar)
@@ -37,6 +38,7 @@ func registerRouter(r *gin.RouterGroup) {
 
 	r.GET("/api/kamar", middleware.Validate, controllers.GetKamar)
 	r.GET("/api/kamar/:id", middleware.Validate, controllers.GetKamarById)
+	r.GET("/api/kamar/nomor/:num", middleware.Validate, controllers.GetKamarByNomorKamar)
 	r.POST("/api/kamar", middleware.Validate, controllers.CreateKamar)
 	r.PUT("/api/kamar/:id", middleware.Validate, controllers.UpdateKamar)
 	r.DELETE("/api/kamar/:id", middleware.Validate, controllers.DeleteKamar)
@@ -44,12 +46,14 @@ func registerRouter(r *gin.RouterGroup) {
 
 	r.GET("/api/season", middleware.Validate, controllers.GetSeasons)
 	r.GET("/api/season/:id", middleware.Validate, controllers.GetSeasonById)
+	r.GET("/api/season/search", middleware.Validate, controllers.GetSeasonByName)
 	r.POST("/api/season", middleware.Validate, controllers.CreateSeason)
 	r.PUT("/api/season/:id", middleware.Validate, controllers.UpdateSeason)
 	r.DELETE("/api/season/:id", middleware.Validate, controllers.DeleteSeason)
 
 	r.GET("/api/fasilitasberbayar", middleware.Validate, controllers.GetFasilitasBerbayars)
 	r.GET("/api/fasilitasberbayar/:id", middleware.Validate, controllers.GetFasilitasBerbayarById)
+	r.GET("/api/fasilitasberbayar/search", middleware.Validate, controllers.GetFasilitasBerbayarByName)
 	r.POST("/api/fasilitasberbayar", middleware.Validate, controllers.CreateFasilitasBerbayar)
 	r.PUT("/api/fasilitasberbayar/:id", middleware.Validate, controllers.UpdateFasilitasBerbayar)
 	r.DELETE("/api/fasilitasberbayar/:id", middleware.Validate, controllers.DeleteFasilitasBerbayar)
@@ -61,6 +65,7 @@ func registerRouter(r *gin.RouterGroup) {
 	r.GET("/api/tarif/:id", middleware.Validate, controllers.GetTarifById)
 	r.POST("/api/tarif", middleware.Validate, controllers.CreateTarif)
 	r.PUT("/api/tarif/:id", middleware.Validate, controllers.UpdateTarif)
+	r.GET("/api/tarif/search", middleware.Validate, controllers.GetTarifByRoomTypeOrSeason)
 	r.DELETE("/api/tarif/:id", middleware.Validate, controllers.DeleteTarif)
 
 	r.POST("/api/reservasi", middleware.Validate, controllers.CreateReservasi)
@@ -69,22 +74,24 @@ func registerRouter(r *gin.RouterGroup) {
 	r.GET("/api/transaksihistory/:userId", middleware.Validate, controllers.GetTransaksiHistoryByUserId)
 	r.GET("/api/transaksidetail/:id", middleware.Validate, controllers.GetTransaksiDetail)
 
-	r.PUT("/api/transaksi/updatedeposit/:id", middleware.Validate, controllers.UpdateStatusDeposit)
+	r.PUT("/api/transaksi/do/updatedeposit/:id", middleware.Validate, controllers.UpdateStatusDeposit)
 
 	r.GET("/api/transaksi/search/batal", middleware.Validate, controllers.GetTransaksiByUsernameOrTransactionIdCanCancel)
-	r.PUT("/api/transaksi/batal/:id", middleware.Validate, controllers.UpdateStatusBatal)
+	r.PUT("/api/transaksi/do/batalstatus/:id", middleware.Validate, controllers.UpdateStatusBatal)
 
 	r.GET("/api/transaksi/search/uncompletepayment", middleware.Validate, controllers.GetTransaksiByUsernameOrTransactionIdNotCompletedPayment)
-	r.PUT("/api/transaksi/updatepayment/:id", middleware.Validate, controllers.UpdateStatusBayar)
+	r.PUT("/api/transaksi/do/updatepayment/:id", middleware.Validate, controllers.UpdateStatusBayar)
 
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
 
 // init gin app
 func init() {
-	app = gin.New()
+	app = gin.Default()
+	// app = gin.New()
+	app.Use(CORSMiddleware())
 
-	utility.InitToken("dnaidnaodnaw", 30)
+	utility.InitToken("dnaidnaodnaw", 60)
 
 	database.ConnectPostgres()
 
@@ -107,4 +114,25 @@ func init() {
 // entrypoint
 func Handler(w http.ResponseWriter, r *http.Request) {
 	app.ServeHTTP(w, r)
+}
+
+// jika run menggunakan vercel dev, comment main
+func main() {
+	app.Run(":8080")
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, DELETE, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }

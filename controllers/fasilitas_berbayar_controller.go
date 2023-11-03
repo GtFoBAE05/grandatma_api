@@ -117,6 +117,43 @@ func GetFasilitasBerbayarById(c *gin.Context) {
 
 }
 
+func GetFasilitasBerbayarByName(c *gin.Context) {
+	name := c.Query("name")
+	var fasilitasBerbayar []models.FasilitasBerbayar
+
+	query := `
+		SELECT 
+			id, nama_fasilitas, harga, created_at, updated_at
+		FROM
+			fasilitas_berbayar
+		WHERE nama_fasilitas ilike '%' || $1 || '%'
+	`
+
+	err := database.DBClient.Select(&fasilitasBerbayar, query, name)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	if len(fasilitasBerbayar) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   true,
+			"message": "Data tidak ada",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  fasilitasBerbayar,
+	})
+
+}
+
 func UpdateFasilitasBerbayar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

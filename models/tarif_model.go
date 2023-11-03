@@ -2,6 +2,10 @@ package models
 
 import "time"
 
+type Id struct {
+	Id int64 `json:"id" db:"id"`
+}
+
 type Tarif struct {
 	Id          int       `json:"id" db:"id"`
 	IdTipeKamar int       `json:"id_tipe_kamar" db:"id_tipe_kamar"`

@@ -106,7 +106,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
-			"pesan":   "Tidak ditemukan email/pass",
+			"pesan":   "Tidak ditemukan email",
 			"message": err.Error(),
 		})
 		return
@@ -127,9 +127,8 @@ func Login(c *gin.Context) {
 	tokString, err := token.GenerateToken()
 
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   true,
-			"pesan":   "Pass salah",
 			"message": err.Error(),
 		})
 		return
@@ -209,8 +208,15 @@ func ChangePassword(c *gin.Context) {
 
 }
 
-func ShowUserDetailByIdParam(c *gin.Context) {
-	username := c.Param("username")
+func ShowUserDetailByToken(c *gin.Context) {
+	username, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   true,
+			"message": "Tidak ada token atau Gagal mengambil ID pengguna.",
+		})
+		return
+	}
 
 	var user models.Pengguna
 
@@ -220,7 +226,7 @@ func ShowUserDetailByIdParam(c *gin.Context) {
 			, username, notelp
 		FROM
 			pengguna
-		WHERE username = $1
+		WHERE id = $1
 	`
 	err := database.DBClient.Get(&user, query, username)
 
@@ -238,7 +244,36 @@ func ShowUserDetailByIdParam(c *gin.Context) {
 	})
 }
 
-func SearchUserByUsername(c *gin.Context) {
+func ShowUserDetailByIdParam(c *gin.Context) {
+	id := c.Param("id")
+
+	var user models.Pengguna
+
+	query := `
+		SELECT 
+			id, nama, email
+			, username, notelp, role, created_at
+		FROM
+			pengguna
+		WHERE id = $1
+	`
+	err := database.DBClient.Get(&user, query, id)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  user,
+	})
+}
+
+func SearchCustomerByUsername(c *gin.Context) {
 	username := c.Query("username")
 
 	var user []models.Pengguna
@@ -246,10 +281,13 @@ func SearchUserByUsername(c *gin.Context) {
 	query := `
 		SELECT 
 			id, nama, email
-			, username, notelp
+			, username, notelp, role
 		FROM
 			pengguna
-		WHERE username like '%' || $1 || '%'
+		WHERE 
+			username like '%' || $1 || '%'
+		AND
+			(role = 'customer' OR role = 'group')
 	`
 	err := database.DBClient.Select(&user, query, username)
 
@@ -257,6 +295,14 @@ func SearchUserByUsername(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
 			"message": err.Error(),
+		})
+		return
+	}
+
+	if len(user) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   true,
+			"message": "Data tidak ada",
 		})
 		return
 	}
@@ -307,7 +353,7 @@ func UpdateProfile(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(reqBody.Nama, reqBody.Email, reqBody.Notelp, reqBody.Notelp, time.Now(), userID)
+	_, err = stmt.Exec(reqBody.Nama, reqBody.Email, reqBody.Username, reqBody.Notelp, time.Now(), userID)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

@@ -121,6 +121,45 @@ func GetSeasonById(c *gin.Context) {
 
 }
 
+func GetSeasonByName(c *gin.Context) {
+	nama := c.Query("nama")
+	var season []models.Season
+
+	query := `
+		SELECT 
+			id, nama_season, tanggal_mulai
+			, tanggal_berakhir
+			, created_at, updated_at
+		FROM
+			season
+		WHERE nama_season like '%' || $1 || '%'
+	`
+
+	err := database.DBClient.Select(&season, query, nama)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	if len(season) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   true,
+			"message": "Data tidak ada",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  season,
+	})
+
+}
+
 func UpdateSeason(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

@@ -12,6 +12,7 @@ import (
 
 func CreateTipeKamar(c *gin.Context) {
 	var reqBody models.TipeKamar
+	var id int64
 
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -21,11 +22,13 @@ func CreateTipeKamar(c *gin.Context) {
 		return
 	}
 
-	tipeKamar := models.NewTipeKamar(reqBody.NamaTipe, reqBody.PilihanTempatTidur, reqBody.Fasilitas, reqBody.Deskripsi, reqBody.RincianKamar)
+	//add tipe kamar
+	tipeKamar := models.NewTipeKamar(reqBody.NamaTipe, reqBody.PilihanTempatTidur, reqBody.Fasilitas, reqBody.Deskripsi, reqBody.RincianKamar, reqBody.Tarif)
 
 	query := `
 	INSERT INTO tipe_kamar (nama_tipe, pilihan_tempat_tidur, fasilitas, deskripsi, rincian_kamar, created_at, updated_at)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	RETURNING id
 	`
 
 	stmt, err := database.DBClient.Prepare(query)
@@ -39,7 +42,40 @@ func CreateTipeKamar(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(tipeKamar.NamaTipe, tipeKamar.PilihanTempatTidur, tipeKamar.Fasilitas, tipeKamar.Deskripsi, tipeKamar.RincianKamar, tipeKamar.CreatedAt, tipeKamar.UpdatedAt)
+	// result, err := stmt.Exec(tipeKamar.NamaTipe, tipeKamar.PilihanTempatTidur, tipeKamar.Fasilitas, tipeKamar.Deskripsi, tipeKamar.RincianKamar, tipeKamar.CreatedAt, tipeKamar.UpdatedAt)
+
+	err = database.DBClient.QueryRow(query, tipeKamar.NamaTipe, tipeKamar.PilihanTempatTidur,
+		tipeKamar.Fasilitas, tipeKamar.Deskripsi, tipeKamar.RincianKamar,
+		tipeKamar.CreatedAt, tipeKamar.UpdatedAt).Scan(&id)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	//add tarif default
+	tarif := models.NewTarif(int(id), 2, reqBody.Tarif)
+
+	query = `
+	INSERT INTO tarif (id_tipe_kamar, season_id, tarif, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5)
+	`
+
+	stmt, err = database.DBClient.Prepare(query)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(tarif.IdTipeKamar, tarif.SeasonId, tarif.Tarif, tarif.CreatedAt, tarif.UpdatedAt)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

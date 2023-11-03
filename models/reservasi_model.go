@@ -5,8 +5,8 @@ import "time"
 type Reservasi struct {
 	Id              int       `json:"id" db:"id"`
 	IdReservasi     string    `json:"id_reservasi" db:"id_reservasi"`
-	IdPengguna      int       `json:"id_pengguna" db:"id_pengguna"`
-	NomorKamar      int       `json:"nomor_kamar" db:"nomor_kamar"`
+	Email_pengguna  string    `json:"email_pengguna" db:"email_pengguna"`
+	IdKamar         int       `json:"id_kamar" db:"id_kamar"`
 	TanggalCheckin  string    `json:"tanggal_checkin" db:"tanggal_checkin"`
 	TanggalCheckout string    `json:"tanggal_checkout" db:"tanggal_checkout"`
 	JumlahDewasa    int       `json:"jumlah_dewasa" db:"jumlah_dewasa"`
@@ -21,11 +21,11 @@ type TotalReservasi struct {
 	TotalReservasi int `db:"total_reservasi"`
 }
 
-func NewReservasi(idReservasi string, idPengguna int, nomorKamar int, tanggalCheckin string, tanggalCheckout string, jumlahDewasa int, jumlahAnak int, nomorRekening string, pilihanKasur string) Reservasi {
+func NewReservasi(idReservasi string, emailPengguna string, idKamar int, tanggalCheckin string, tanggalCheckout string, jumlahDewasa int, jumlahAnak int, nomorRekening string, pilihanKasur string) Reservasi {
 	return Reservasi{
 		IdReservasi:     idReservasi,
-		IdPengguna:      idPengguna,
-		NomorKamar:      nomorKamar,
+		Email_pengguna:  emailPengguna,
+		IdKamar:         idKamar,
 		TanggalCheckin:  tanggalCheckin,
 		TanggalCheckout: tanggalCheckout,
 		JumlahDewasa:    jumlahDewasa,

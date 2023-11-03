@@ -91,7 +91,7 @@ func GetTarifs(c *gin.Context) {
 func GetTarifById(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
-	var tarif models.TarifXTipeKamarXSeason
+	var tarif models.Tarif
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
@@ -99,6 +99,44 @@ func GetTarifById(c *gin.Context) {
 		})
 		return
 	}
+
+	query := `
+		SELECT 
+			*
+		FROM
+			tarif t
+		
+		WHERE id = $1
+	`
+
+	err = database.DBClient.Get(&tarif, query, id)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  tarif,
+	})
+
+}
+
+func GetTarifByRoomTypeOrSeason(c *gin.Context) {
+	searchStr := c.Query("keyword")
+	// id, err := strconv.Atoi(priceStr)
+	var tarif []models.TarifXTipeKamarXSeason
+	// if err != nil {
+	// 	c.JSON(http.StatusUnprocessableEntity, gin.H{
+	// 		"error":   true,
+	// 		"message": err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	query := `
 		SELECT 
@@ -113,15 +151,23 @@ func GetTarifById(c *gin.Context) {
 			season s
 		ON
 			t.season_id = s.id
-		WHERE t.id = $1
+		WHERE s.nama_season like $1
 	`
 
-	err = database.DBClient.Get(&tarif, query, id)
+	err := database.DBClient.Select(&tarif, query, searchStr)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":   true,
 			"message": err.Error(),
+		})
+		return
+	}
+
+	if len(tarif) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   true,
+			"message": "Data tidak ada",
 		})
 		return
 	}

@@ -122,6 +122,40 @@ func GetKamarById(c *gin.Context) {
 
 }
 
+func GetKamarByNomorKamar(c *gin.Context) {
+	noStr := c.Param("num")
+	var kamar models.KamarXTipeKamar
+
+	query := `
+		SELECT 
+			k.id as id_kamar, k.nomor_kamar, tk.nama_tipe, k.status
+			, k.created_at, k.updated_at
+		FROM
+			kamar k
+		JOIN 
+			tipe_kamar tk
+		on k.id_tipe_kamar = tk.id
+		WHERE
+			k.nomor_kamar = $1
+	`
+
+	err := database.DBClient.Get(&kamar, query, noStr)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error":   true,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+		"data":  kamar,
+	})
+
+}
+
 func GetKetersediaanKamarByDate(c *gin.Context) {
 	tanggalMulai := c.Query("tanggal_mulai")
 	tanggalSelesai := c.Query("tanggal_selesai")
@@ -129,24 +163,121 @@ func GetKetersediaanKamarByDate(c *gin.Context) {
 	var kamar []models.KamarAvail
 
 	query := `
-    SELECT 
-		k.nomor_kamar, tk.nama_tipe, t.tarif
-    FROM 
-		kamar k
-    INNER JOIN 
-		tipe_kamar tk ON k.id_tipe_kamar = tk.id
-    LEFT JOIN 
-		tarif t ON tk.id = t.id_tipe_kamar
-	LEFT JOIN 
-		reservasi r ON k.nomor_kamar = r.nomor_kamar
-    WHERE 
-		k.status = true
-    AND (
-        (r.tanggal_checkin > $1 AND r.tanggal_checkin > $2)
-        OR (r.tanggal_checkout < $1 AND r.tanggal_checkout < $2)
-        OR (r.tanggal_checkin IS NULL AND r.tanggal_checkout IS NULL)
-    );
+	SELECT
+	k.id as id_kamar, k.nomor_kamar, tk.nama_tipe, k.id_tipe_kamar,
+	COALESCE(t_season.tarif, t_default.tarif) AS tarif,
+	CASE
+		WHEN s.id IS NOT NULL THEN s.id
+		ELSE s_default.id
+	END AS id_season
+	FROM
+	kamar k
+	INNER JOIN
+	tipe_kamar tk ON k.id_tipe_kamar = tk.id
+	LEFT JOIN
+	(
+		SELECT * FROM tarif WHERE season_id IN (
+			SELECT id FROM season WHERE $1 BETWEEN tanggal_mulai AND tanggal_berakhir
+		)
+	) t_season ON tk.id = t_season.id_tipe_kamar
+	LEFT JOIN
+	(
+		SELECT * FROM tarif WHERE season_id IN (
+			SELECT id FROM season WHERE nama_season = 'default'
+		)
+	) t_default ON tk.id = t_default.id_tipe_kamar
+	LEFT JOIN
+	season s ON t_season.season_id = s.id
+	LEFT JOIN
+	season s_default ON t_default.season_id = s_default.id
+	LEFT JOIN
+	reservasi r ON k.id= r.id_kamar
+	WHERE
+	k.status = true
+	AND (
+	(r.tanggal_checkin > $2 OR r.tanggal_checkout < $1 OR r.tanggal_checkin IS NULL OR r.tanggal_checkout IS NULL)
+	)
 `
+
+	// SELECT
+	// k.nomor_kamar, tk.nama_tipe,
+	// COALESCE(t_season.tarif, t_default.tarif) AS tarif,
+	// CASE
+	// 	WHEN s.id IS NOT NULL THEN s.id
+	// 	ELSE s_default.id
+	// END AS id_season
+	// FROM
+	// kamar k
+	// INNER JOIN
+	// tipe_kamar tk ON k.id_tipe_kamar = tk.id
+	// LEFT JOIN
+	// (
+	// 	SELECT * FROM tarif WHERE season_id IN (
+	// 		SELECT id FROM season WHERE $1 BETWEEN tanggal_mulai AND tanggal_berakhir
+	// 	)
+	// ) t_season ON tk.id = t_season.id_tipe_kamar
+	// LEFT JOIN
+	// (
+	// 	SELECT * FROM tarif WHERE season_id IN (
+	// 		SELECT id FROM season WHERE nama_season = 'default'
+	// 	)
+	// ) t_default ON tk.id = t_default.id_tipe_kamar
+	// LEFT JOIN
+	// season s ON t_season.season_id = s.id
+	// LEFT JOIN
+	// season s_default ON t_default.season_id = s_default.id
+	// LEFT JOIN
+	// reservasi r ON k.nomor_kamar = r.nomor_kamar
+	// WHERE
+	// k.status = true
+	// AND (
+	// (r.tanggal_checkin > $2 OR r.tanggal_checkout < $1 OR r.tanggal_checkin IS NULL OR r.tanggal_checkout IS NULL)
+	// )
+
+	// SELECT
+	//     k.nomor_kamar, tk.nama_tipe,  k.id as id_kamar, k.id_tipe_kamar,
+	//     COALESCE(t_season.tarif, t_default.tarif) AS tarif
+	// FROM
+	//     kamar k
+	// INNER JOIN
+	//     tipe_kamar tk ON k.id_tipe_kamar = tk.id
+	// LEFT JOIN
+	//     (
+	//         SELECT * FROM tarif WHERE season_id IN (
+	//             SELECT id FROM season WHERE $1 BETWEEN tanggal_mulai AND tanggal_berakhir
+	//         )
+	//     ) t_season ON tk.id = t_season.id_tipe_kamar
+	// LEFT JOIN
+	//     (
+	//         SELECT * FROM tarif WHERE season_id IN (
+	//             SELECT id FROM season WHERE nama_season = 'default'
+	//         )
+	//     ) t_default ON tk.id = t_default.id_tipe_kamar
+	// LEFT JOIN
+	//     reservasi r ON k.nomor_kamar = r.nomor_kamar
+	// WHERE
+	//     k.status = true
+	// AND (
+	//     (r.tanggal_checkin > $2 OR r.tanggal_checkout < $1 OR r.tanggal_checkin IS NULL OR r.tanggal_checkout IS NULL)
+	// )
+
+	// SELECT
+	// 		k.nomor_kamar, tk.nama_tipe, t.tarif
+	//     FROM
+	// 		kamar k
+	//     INNER JOIN
+	// 		tipe_kamar tk ON k.id_tipe_kamar = tk.id
+	//     LEFT JOIN
+	// 		tarif t ON tk.id = t.id_tipe_kamar
+	// 	LEFT JOIN
+	// 		reservasi r ON k.nomor_kamar = r.nomor_kamar
+	//     WHERE
+	// 		k.status = true
+	//     AND (
+	//         (r.tanggal_checkin > $1 AND r.tanggal_checkin > $2)
+	//         OR (r.tanggal_checkout < $1 AND r.tanggal_checkout < $2)
+	//         OR (r.tanggal_checkin IS NULL AND r.tanggal_checkout IS NULL)
+	//     );
 
 	err := database.DBClient.Select(&kamar, query, tanggalMulai, tanggalSelesai)
 
