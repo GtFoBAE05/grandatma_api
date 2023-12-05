@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -13,25 +14,22 @@ var DBClient *sqlx.DB
 func ConnectPostgres() (db *sqlx.DB, err error) {
 
 	// //onlinedb
-	// host := "ep-jolly-waterfall-25791148.ap-southeast-1.aws.neon.tech"
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	user := os.Getenv("USER")
+	pass := os.Getenv("PASS")
+	dbname := os.Getenv("DBNAME")
+	// //local
+	// host := "localhost"
 	// port := "5432"
-	// user := "GtFoBAE05"
-	// pass := "VrcNhj62Fmbp"
-	// dbname := "neondb"
-	//local
-	host := "localhost"
-	port := "5432"
-	user := "postgres"
-	pass := "admin"
-	dbname := "grandatma"
-	// membuat data source name
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	// user := "postgres"
+	// pass := "admin"
+	// dbname := "grandatma"
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
 		host, port, user, pass, dbname,
 	)
 
-	// melakukan open koneksi ke postgres
-	// driver postgres bisa di dapat dari melakukan import
-	// dengan cara import _ "github.com/lib/pq"
 	db, err = sqlx.Open("postgres", dsn)
 	if err != nil {
 		panic(err)
@@ -41,8 +39,6 @@ func ConnectPostgres() (db *sqlx.DB, err error) {
 	db.SetMaxIdleConns(20)
 	db.SetConnMaxLifetime(time.Minute * 5)
 
-	// validate if db berhasil untuk terhubung
-	// dengan cara melakukan `ping`
 	err = db.Ping()
 	if err != nil {
 		panic(err)

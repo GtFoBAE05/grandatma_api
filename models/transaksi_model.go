@@ -19,10 +19,15 @@ type TransaksiHistory struct {
 	TotalPembayaran  float64 `json:"total_pembayaran" db:"total_pembayaran"`
 }
 
+type UpdateDeposit struct {
+	NominalDeposit float64 `json:"nominal_deposit" db:"nominal_deposit"`
+}
+
 type SearchTransaksi struct {
 	Nama             string  `db:"nama"`
 	IdReservasi      string  `json:"id_reservasi" db:"id_reservasi"`
 	TanggalTransaksi string  `json:"tanggal_transaksi" db:"tanggal_transaksi"`
+	TanggalCheckin   string  `json:"tanggal_checkin" db:"tanggal_checkin"`
 	TotalPembayaran  float64 `json:"total_pembayaran" db:"total_pembayaran"`
 }
 
@@ -36,7 +41,11 @@ type TransaksiDetail struct {
 	JumlahDewasa     int     `db:"jumlah_dewasa"`
 	JumlahAnak       int     `db:"jumlah_anak"`
 	NomorRekening    string  `db:"nomor_rekening"`
+	IdTipeKamar      string  `db:"id_tipe_kamar"`
+	TipeKamar        string  `db:"nama_tipe"`
 	PilihanKasur     string  `db:"pilihan_kasur"`
+	Jaminan          float64 `json:"jaminan" db:"jaminan"`
+	Deposit          float64 `json:"deposit" db:"deposit"`
 	StatusBatal      bool    `db:"status_batal"`
 }
 

@@ -20,6 +20,16 @@ type FasilitasReservasiXTipeFasilitas struct {
 	UpdatedAt     time.Time `db:"updated_at"`
 }
 
+type FasilitasReservasiXTipeFasilitasXHarga struct {
+	Id            int       `db:"id"`
+	IdReservasi   string    `db:"id_reservasi"`
+	NamaFasilitas string    `db:"nama_fasilitas"`
+	JumlahUnit    int       `db:"jumlah_unit"`
+	Harga         float64   `db:"harga"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+}
+
 func NewFasilitasReservasi(idReservasi string, idFasilitasBerbayar, jumlahUnit int) FasilitasReservasi {
 	return FasilitasReservasi{
 		IdReservasi:         idReservasi,

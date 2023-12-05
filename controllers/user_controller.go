@@ -31,11 +31,11 @@ func CreatePengguna(c *gin.Context) {
 		return
 	}
 
-	users := models.NewPengguna(reqBody.Nama, reqBody.Email, reqBody.Username, reqBody.Notelp, hashPass, reqBody.Role)
+	users := models.NewPengguna(reqBody.Nama, reqBody.Email, reqBody.Username, reqBody.Notelp, hashPass, reqBody.Alamat, reqBody.Role)
 
 	query := `
-	INSERT INTO pengguna (nama, email, username, notelp, password, role, created_at, updated_at)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	INSERT INTO pengguna (nama, email, username, notelp, password, alamat,role, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		`
 
 	stmt, err := database.DBClient.Prepare(query)
@@ -49,7 +49,7 @@ func CreatePengguna(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(users.Nama, users.Email, users.Username, users.Notelp, users.Password, users.Role, users.CreatedAt, users.UpdatedAt)
+	_, err = stmt.Exec(users.Nama, users.Email, users.Username, users.Notelp, users.Password, users.Alamat, users.Role, users.CreatedAt, users.UpdatedAt)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -222,7 +222,7 @@ func ShowUserDetailByToken(c *gin.Context) {
 
 	query := `
 		SELECT 
-			id, nama, email
+			id, nama, email, alamat
 			, username, notelp
 		FROM
 			pengguna
@@ -251,7 +251,7 @@ func ShowUserDetailByIdParam(c *gin.Context) {
 
 	query := `
 		SELECT 
-			id, nama, email
+			id, nama, email, alamat
 			, username, notelp, role, created_at
 		FROM
 			pengguna
@@ -280,7 +280,7 @@ func SearchCustomerByUsername(c *gin.Context) {
 
 	query := `
 		SELECT 
-			id, nama, email
+			id, nama, email, alamat
 			, username, notelp, role
 		FROM
 			pengguna
@@ -338,8 +338,9 @@ func UpdateProfile(c *gin.Context) {
 		email = $2,
 		username = $3,
 		notelp = $4,
-		updated_at = $5
-		WHERE id = $6
+		alamat = $5,
+		updated_at = $6
+		WHERE id = $7
 	`
 
 	stmt, err := database.DBClient.Prepare(query)
@@ -353,7 +354,7 @@ func UpdateProfile(c *gin.Context) {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(reqBody.Nama, reqBody.Email, reqBody.Username, reqBody.Notelp, time.Now(), userID)
+	_, err = stmt.Exec(reqBody.Nama, reqBody.Email, reqBody.Username, reqBody.Notelp, reqBody.Alamat, time.Now(), userID)
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

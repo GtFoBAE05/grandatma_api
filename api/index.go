@@ -69,18 +69,44 @@ func registerRouter(r *gin.RouterGroup) {
 	r.DELETE("/api/tarif/:id", middleware.Validate, controllers.DeleteTarif)
 
 	r.POST("/api/reservasi", middleware.Validate, controllers.CreateReservasi)
+	r.POST("/api/personal/reservasi", middleware.Validate, controllers.CreatePersonalReservasi)
 
 	r.GET("/api/transaksihistory", middleware.Validate, controllers.GetTransaksiHistory)
 	r.GET("/api/transaksihistory/:userId", middleware.Validate, controllers.GetTransaksiHistoryByUserId)
 	r.GET("/api/transaksidetail/:id", middleware.Validate, controllers.GetTransaksiDetail)
 
-	r.PUT("/api/transaksi/do/updatedeposit/:id", middleware.Validate, controllers.UpdateStatusDeposit)
+	//jaminan
+	r.PUT("/api/jaminan/:id", middleware.Validate, controllers.UpdateJaminan)
+	r.PUT("/api/jaminanwithrek/:id", middleware.Validate, controllers.UpdateJaminanWithRekening)
+	r.GET("/api/jaminan", middleware.Validate, controllers.GetJaminan)
+	r.GET("/api/jaminan/:id", middleware.Validate, controllers.GetJaminanById)
+	r.GET("/api/jaminan/my", middleware.Validate, controllers.GetMyJaminan)
+	r.GET("/api/jaminan/my/:id", middleware.Validate, controllers.GetMyJaminanById)
+	r.GET("/api/jaminan/search/uncompletejaminan", middleware.Validate, controllers.GetGroupUncompleteJaminanPayment)
 
 	r.GET("/api/transaksi/search/batal", middleware.Validate, controllers.GetTransaksiByUsernameOrTransactionIdCanCancel)
+	r.GET("/api/transaksi/my/search/batal", middleware.Validate, controllers.GetTransaksiByTransactionIdCanCancel)
 	r.PUT("/api/transaksi/do/batalstatus/:id", middleware.Validate, controllers.UpdateStatusBatal)
+	r.PUT("/api/transaksi/do/updatestatuslunas/:id", middleware.Validate, controllers.UpdateStatusLunas)
 
-	r.GET("/api/transaksi/search/uncompletepayment", middleware.Validate, controllers.GetTransaksiByUsernameOrTransactionIdNotCompletedPayment)
-	r.PUT("/api/transaksi/do/updatepayment/:id", middleware.Validate, controllers.UpdateStatusBayar)
+	//deposit
+	r.PUT("/api/transaksi/do/updatedeposit/:id", middleware.Validate, controllers.UpdateStatusDeposit)
+
+	//status menginap
+	r.GET("/api/menginap/searchtransactionabletocheckin", middleware.Validate, controllers.SearchTransactionAbleToCheckin)
+	r.GET("/api/menginap/searchtransactionabletocheckout", middleware.Validate, controllers.SearchTransactionAbleToCheckout)
+	r.GET("/api/menginap/searchtransactionabletocomplete", middleware.Validate, controllers.SearchTransactionAbleToComplete)
+	r.PUT("/api/menginap/do/updatecheckin/:id", middleware.Validate, controllers.UpdateStatusCheckin)
+	r.PUT("/api/menginap/do/updatecheckout/:id", middleware.Validate, controllers.UpdateStatusCheckout)
+
+	// uang muka grup
+	// r.PUT("/api/transaksi/do/updateuangmuka/:id", middleware.Validate, controllers.UpdateUangMuka)
+
+	//laporan
+	r.GET("/api/report/newcustomerbyyear/:year", middleware.Validate, controllers.GetNewCustomerstatistics)
+	r.GET("/api/report/monthlyreport/:year", middleware.Validate, controllers.GetMonthlyReport)
+	r.GET("/api/report/visitorreport/:month/:year", middleware.Validate, controllers.GetVisitorStatistics)
+	r.GET("/api/report/topcustomer/:year", middleware.Validate, controllers.GetTopCustomerByYear)
 
 	r.GET("/api/pong", middleware.Validate, controllers.ProtectedHandler)
 }
@@ -117,9 +143,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 // jika run menggunakan vercel dev, comment main
-func main() {
-	app.Run(":8080")
-}
+// func main() {
+// 	app.Run(":53472")
+// }
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
