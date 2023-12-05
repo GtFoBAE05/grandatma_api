@@ -1,10 +1,10 @@
-package main
+package handler
 
 import (
 	"fmt"
 	"grandatma_api/controllers"
 	"grandatma_api/database"
-	"grandatma_api/handler"
+	defaulthandler "grandatma_api/default_handler"
 	"grandatma_api/middleware"
 	"grandatma_api/utility"
 
@@ -19,7 +19,8 @@ var (
 )
 
 func registerRouter(r *gin.RouterGroup) {
-	r.GET("/api/ping", handler.Ping)
+
+	r.GET("/api/ping", defaulthandler.Ping)
 
 	r.POST("/api/auth/signup", controllers.CreatePengguna)
 	r.POST("/api/auth/login", controllers.Login)
